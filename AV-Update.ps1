@@ -11,7 +11,7 @@ Write-Host "Directory and hash file created." -ForegroundColor Cyan
 
 
 
-function av-mcafee {
+function Get-McAfeeDefinitions {
     # https://www.mcafee.com/enterprise/en-us/downloads/security-updates.html
     if (Test-Path "$destinationPath\*xdat.exe") {
         Write-Host "McAfee Definitions already downloaded." -ForegroundColor Red
@@ -31,13 +31,13 @@ function av-mcafee {
         }
     }
 }
-av-mcafee
+Get-McAfeeDefinitions
 
 
 
 
 
-function av-sep {
+function Get-SEPDefinitions {
     # https://www.broadcom.com/support/security-center/definitions/download/detail?gid=sep14
     if (Test-Path "$destinationPath\$todayone-003-core15sdsv5i64.exe") {
         Write-Host "SEP Definitions already downloaded." -ForegroundColor Yellow
@@ -69,14 +69,14 @@ function av-sep {
         }
     }
 }
-av-sep
+Get-SEPDefinitions
 
 
 
 
 
 
-function av-windefend {
+function Get-WinDefenderDefinitions {
     # https://www.microsoft.com/en-us/wdsi/defenderupdates#Manually
     if (Test-Path "$destinationPath\$todayone-windefend-definitions.exe") {
         Write-Host "Windows Defender Definitions already downloaded." -ForegroundColor Green
@@ -94,11 +94,11 @@ function av-windefend {
         }
     }
 }
-av-windefend
+Get-WinDefenderDefinitions
 
 
 
-function av-bitdefender {
+function Get-BitDefenderDefinitions {
     # https://www.bitdefender.com/consumer/support/answer/10690/
     if (Test-Path "$destinationPath\bitdefender-definitions.exe") {
         Write-Host "Bitdefender Definitions already downloaded." -ForegroundColor Blue
@@ -116,20 +116,20 @@ function av-bitdefender {
         }
 }
 }
-av-bitdefender
+Get-BitDefenderDefinitions
 
 
 
 
-function av-malwarebytes {
+function Get-MalwareBytesDefinitions {
     # MalwareBytes does not support direct download of definitions
 }
-#av-malwarebytes
+#Get-MalwareBytesDefinitions
 
 
 
 
-function av-clamav {
+function Get-ClamAVDefinitions {
 ## Broken, CloudFlare Blocks this type of download.
 
     # https://www.clamav.net/downloads
@@ -160,7 +160,7 @@ function av-clamav {
         }
     }
 }
-#av-clamav
+#Get-ClamAVDefinitions
 
 
 
