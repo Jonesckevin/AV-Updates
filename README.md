@@ -6,7 +6,7 @@ This script is designed to download the latest definitions for various Anti-Viru
 ## Worked on
 AV | Support Link
 ---|---
-**McAfee**** | https://www.mcafee.com/enterprise/en-us/downloads/security-updates.html
+**McAfee** | https://www.mcafee.com/enterprise/en-us/downloads/security-updates.html
 **Symantec** | https://support.broadcom.com/security-center/definitions/download/detail?gid=sep14
 **Windows Defender** | https://www.microsoft.com/en-us/wdsi/defenderupdates#Manually
 **Bitdefender** | https://www.bitdefender.com/consumer/support/answer/13427/
