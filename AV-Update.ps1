@@ -21,9 +21,6 @@ if (Test-Path $HASHFILE) {
     Write-Host "Hash file created." -ForegroundColor Cyan
 }
 
-
-
-
 function Get-McAfeeDefinitions {
     # https://www.mcafee.com/enterprise/en-us/downloads/security-updates.html
     if (Test-Path "$destinationPath\*xdat.exe") {
@@ -45,10 +42,6 @@ function Get-McAfeeDefinitions {
     }
 }
 Get-McAfeeDefinitions
-
-
-
-
 
 function Get-SEPDefinitions {
     # https://www.broadcom.com/support/security-center/definitions/download/detail?gid=sep14
@@ -80,9 +73,6 @@ function Get-SEPDefinitions {
 }
 Get-SEPDefinitions
 
-
-
-
 function Get-WinDefenderDefinitions {
     # https://www.microsoft.com/en-us/wdsi/defenderupdates#Manually
     if (Test-Path "$destinationPath\$todayone-windefend-definitions.exe") {
@@ -102,39 +92,6 @@ function Get-WinDefenderDefinitions {
     }
 }
 Get-WinDefenderDefinitions
-
-
-
-function Get-BitDefenderDefinitions {
-    # https://www.bitdefender.com/consumer/support/answer/10690/
-    if (Test-Path "$destinationPath\bitdefender-definitions.exe") {
-        Write-Host "Bitdefender Definitions already downloaded." -ForegroundColor Blue
-    } else {
-        Write-Host "Downloading Bitdefender Definitions..." -ForegroundColor Blue
-        $bitdefenderUrl = "https://download.bitdefender.com/updates/cl_2022/x64/weekly.exe"
-        $bitdefenderPath = "$destinationPath\$todayone-bitdefender-definitions.exe"
-        Invoke-WebRequest -Uri $bitdefenderUrl -OutFile $bitdefenderPath
-
-        # Check if the file was downloaded
-        if (Test-Path $bitdefenderPath) {
-            Write-Output "Bitdefender Definitions downloaded successfully."
-        } else {
-            Write-Output "Bitdefender Definitions download failed."
-        }
-}
-}
-#Get-BitDefenderDefinitions
-
-
-
-
-function Get-MalwareBytesDefinitions {
-    # MalwareBytes does not support direct download of definitions
-}
-#Get-MalwareBytesDefinitions
-
-
-
 
 function Get-ClamAVDefinitions {
 ## Broken, CloudFlare Blocks this type of download.
@@ -168,7 +125,6 @@ function Get-ClamAVDefinitions {
     }
 }
 #Get-ClamAVDefinitions
-
 
 function Get-Hash {
 # Hash the file and Output to the hash file
