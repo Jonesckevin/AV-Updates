@@ -25,95 +25,71 @@ else {
 
 function Get-McAfeeDefinitions {
     # https://www.mcafee.com/enterprise/en-us/downloads/security-updates.html
-    if (Test-Path "$destinationPath\*xdat.exe") {
-        Write-Host "McAfee Definitions already downloaded." -ForegroundColor Red
+    $mcAfeeUrl = "https://download.nai.com/products/datfiles/4.x/nai/"
+    $mcAfeePage = Invoke-WebRequest -Uri $mcAfeeUrl
+    $mcAfeeDefName = $mcAfeePage.Links | Where-Object { $_.href -like "*xdat.exe" } | Select-Object -First 1 -ExpandProperty href
+    $mcAfeeDefUrl = "$mcAfeeUrl$mcAfeeDefName"
+    $mcAfeeDefPath = "$destinationPath\$todayone-$mcAfeeDefName"
+    if (Test-Path $mcAfeeDefPath) {
+        Write-Host "McAfee Definitions already downloaded: $mcAfeeDefPath" -ForegroundColor Red
+        return
+    }
+    Write-Host "Downloading McAfee Definitions..." -ForegroundColor Red
+    Invoke-WebRequest -Uri $mcAfeeDefUrl -OutFile $mcAfeeDefPath
+    if (Test-Path $mcAfeeDefPath) {
+        Write-Host "McAfee Definitions downloaded successfully." -ForegroundColor Red
     }
     else {
-        Write-Host "Downloading McAfee Definitions..." -ForegroundColor Red
-        $mcAfeeUrl = "https://download.nai.com/products/datfiles/4.x/nai/"
-        $mcAfeePage = Invoke-WebRequest -Uri $mcAfeeUrl
-        $mcAfeeDefPath = $mcAfeePage.Links | Where-Object { $_.href -like "*xdat.exe" } | Select-Object -First 1 -ExpandProperty href
-        $mcAfeeDefUrl = "$mcAfeeUrl$mcAfeeDefPath"
-        $mcAfeeDefPath = "$destinationPath\$todayone-$mcAfeeDefPath"
-        Invoke-WebRequest -Uri $mcAfeeDefUrl -OutFile $mcAfeeDefPath
-        # Check if the file was downloaded
-        if (Test-Path $mcAfeeDefPath) {
-            Write-Host "McAfee Definitions downloaded successfully." -ForegroundColor Red
-        }
-        else {
-            Write-Host "McAfee Definitions download failed." -ForegroundColor Red
-        }
+        Write-Host "McAfee Definitions download failed." -ForegroundColor Red
     }
 }
 Get-McAfeeDefinitions
 
 function Get-SEPDefinitions {
-    # https://www.broadcom.com/support/security-center/definitions/download/detail?gid=sep14
-    # https://definitions.symantec.com/defs/sds/index.html
-
-    $URL_LIST = "https://definitions.symantec.com/defs/sds/index.html"
+    $url = "https://definitions.symantec.com/defs/sds/index.html"
     $htmlFile = "./SEP-Definitions.html"
-    $pattern = "$todayone-\d{3}-CORE15_IU_SEP_14.0_X64.exe"
-    # Download the SEP definitions index page
-    Invoke-WebRequest -Uri $URL_LIST -OutFile $htmlFile -UseBasicParsing
-
-    # Try today and up to 6 days back
-    $found = $false
+    Invoke-WebRequest -Uri $url -OutFile $htmlFile -UseBasicParsing
+    $SEP_DEF_FILENAME = $null
     for ($i = 0; $i -le 6; $i++) {
-        $dateToTry = (Get-Date).AddDays(-$i).ToString('yyyyMMdd')
-        $patternToTry = "$dateToTry-\d{3}-CORE15_IU_SEP_14.0_X64.exe"
-        $SEP_DEF_FILENAME = Get-Content $htmlFile | Select-String -Pattern $patternToTry | Select-Object -First 1 | ForEach-Object { $_.Matches.Value }
-        if (-not [string]::IsNullOrEmpty($SEP_DEF_FILENAME)) {
-            $found = $true
-            break
-        }
+        $date = (Get-Date).AddDays(-$i).ToString('yyyyMMdd')
+        $pattern = "$date-\d{3}-CORE15_IU_SEP_14.0_X64.exe"
+        $match = Get-Content $htmlFile | Select-String -Pattern $pattern | Select-Object -First 1 | ForEach-Object { $_.Matches.Value }
+        if ($match) { $SEP_DEF_FILENAME = $match; break }
     }
-
-    if (-not $found) {
+    if (-not $SEP_DEF_FILENAME) {
         Write-Output "SEP definitions file name not found for today or recent days. Exiting SEP download."
         Remove-Item $htmlFile -Force -ErrorAction SilentlyContinue
         return
     }
-
-    $localSepDefPath = "$destinationPath\$SEP_DEF_FILENAME"
-    if (Test-Path $localSepDefPath) {
-        Write-Host "SEP definitions already downloaded: $SEP_DEF_FILENAME" -ForegroundColor Yellow
+    $localPath = "$destinationPath\$SEP_DEF_FILENAME"
+    if (Test-Path $localPath) {
+        Write-Host "SEP definitions already downloaded: $localPath" -ForegroundColor Yellow
         Remove-Item $htmlFile -Force -ErrorAction SilentlyContinue
         return
     }
-
-    $SEP_DEF_URL = "https://definitions.symantec.com/defs/sds/$SEP_DEF_FILENAME"
-    Write-Output "SEP definitions available for $SEP_DEF_FILENAME. Downloading..."
-    $webRequestParams = @{
-        Uri     = $SEP_DEF_URL
-        OutFile = $localSepDefPath
-        Headers = @{ "User-Agent" = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3" }
-    }
-    Invoke-WebRequest @webRequestParams
-
-    # Check if the file was downloaded
-    if (Test-Path $localSepDefPath) {
+    $downloadUrl = "https://definitions.symantec.com/defs/sds/$SEP_DEF_FILENAME"
+    Invoke-WebRequest -Uri $downloadUrl -OutFile $localPath -Headers @{ "User-Agent" = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3" }
+    if (Test-Path $localPath) {
         Write-Output "SEP definitions downloaded successfully."
     }
     else {
         Write-Output "SEP definitions download failed."
     }
-    # Delete the HTML file
     Remove-Item $htmlFile -Force -ErrorAction SilentlyContinue
 }
 Get-SEPDefinitions
 
 function Get-WinDefenderDefinitions {
     # https://www.microsoft.com/en-us/wdsi/defenderupdates#Manually
-    if (Test-Path "$destinationPath\$todayone-windefend-definitions.exe") {
-        Write-Host "Windows Defender Definitions already downloaded." -ForegroundColor Green
+    $defenderUrl = "https://go.microsoft.com/fwlink/?LinkID=121721&arch=x64"
+    $DefenderFileName = "$todayone-windefend-definitions.exe"
+    $FilePath = "$destinationPath\$DefenderFileName"
+    if (Test-Path $FilePath) {
+        Write-Host "Windows Defender Definitions already downloaded. $FilePath" -ForegroundColor Green
     }
     else {
         Write-Host "Downloading Windows Defender Definitions..." -ForegroundColor Green
-        $defenderUrl = "https://go.microsoft.com/fwlink/?LinkID=121721&arch=x64"
-        $FilePath = "$destinationPath\$todayone-windefend-definitions.exe"
         Invoke-WebRequest -Uri $defenderUrl -OutFile $FilePath
-
         # Check if the file was downloaded
         if (Test-Path $FilePath) {
             Write-Output "Windows Defender Definitions downloaded successfully."
@@ -174,6 +150,6 @@ function Get-Hash {
     Move-Item -Path $HASHFILE -Destination $destinationPath -Force
     Write-Host "Hash file moved to the destination folder." -ForegroundColor White
 }
-#Get-Hash
+Get-Hash
 
 Remove-Item -Path "./SEP-Definitions.html" -Force -ErrorAction SilentlyContinue
